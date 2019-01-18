@@ -1,0 +1,1 @@
+javascript:var u='https://github.com/tararam/paprika-bookmarklet/save-to-paprika.js';function getPaprikaSaver(){var d=document;if(!d.body)return;try{var s=d.createElement('scr'+'ipt');s.setAttribute('data-self','true');s.setAttribute('src',u+'?timestamp=' + (new Date().getTime()));d.body.appendChild(s);}catch(e){}};getPaprikaSaver();void(0);
