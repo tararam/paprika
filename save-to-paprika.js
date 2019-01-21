@@ -181,7 +181,7 @@ function PrepareAndSaveToPaprika() {
 				//console.log(prep);
 
 				function convertStrToMinutes(str) {
-					var re = /(?:(\d+)h)?\s*(\d+)m/,
+					var re = /(?:(\d+)h)?(?:\s*(\d+)m)?/,
 						tmp,
 						ret = 0
 					;
@@ -190,7 +190,9 @@ function PrepareAndSaveToPaprika() {
 						if (tmp[1]) {
 							ret += 60 * Number(tmp[1]);
 						}
-						ret += Number(tmp[2]);
+						if (tmp[2]) {
+							ret += Number(tmp[2]);
+						}
 					}
 
 					return ret;
@@ -199,7 +201,12 @@ function PrepareAndSaveToPaprika() {
 				prepTime = convertStrToMinutes(n.info.prepTime.value);
 				totalTime = convertStrToMinutes(n.info.totalTime.value);
 
- 				cookTime = totalTime - prepTime;
+				if(totalTime > prepTime) {
+					cookTime = totalTime - prepTime;
+				}
+				else {
+					cookTime = 0;
+				}
 
 				if(cookTime > 60) {
 					cookTimeStr = String(Math.floor(cookTime / 60)) + 'h ' + String(cookTime % 60) + 'm';
@@ -331,32 +338,6 @@ function checkIfiFrameDestroyed(frame) {
 }
 
 function callPaprikaBookmarklet(reloadPageAfterFinished) {
-
-	/*if(reloadPageAfterFinished) {
-
-		var paprikaIFrameName = 'prm_iframe_' + timeID,
-			counter = 0,
-			createdTimer,
-			destroyedTimer,
-			timerDefault = 50,
-			counterMax = 200
-		;
-
-		function checkIfiFrameCreated() {
-			console.log('Waiting until created');
-			if(typeof window.frames[paprikaIFrameName] !== 'undefined') {
-				counter = 0;
-				setTimeout(checkIfiFrameDestroyed(), timerDefault);
-			}
-			else if (counter < counterMax) {
-				counter++;
-				setTimeout(checkIfiFrameCreated(), timerDefault);
-			}
-		}
-
-
-		//checkIfiFrameCreated();
-	}*/
 
 	var s = d.createElement('scr' + 'ipt');
 	if(reloadPageAfterFinished) s.setAttribute('onload','checkIfiFrameDestroyed(this)')
