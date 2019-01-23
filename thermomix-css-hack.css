@@ -1,0 +1,75 @@
+@-moz-document domain("cookidoo.com.au") {
+
+
+body,
+.qv-recipe-section.unfold {
+    user-select: auto !important;
+}
+/*
+.icon.icon-reverse:before {
+    content: "reverse";
+    font-family: Arial !important;
+}
+*/
+.tm-wrapper {
+    max-width: 98% !important;
+    width: auto;
+}
+
+.grid-sidebar {
+    width: 18%;
+}
+
+.grid-container {
+    max-width: 100%;
+    width: 82%;
+    min-height: 101vh;
+}
+
+.tm-recipe-trigger {
+    width: 210px;
+    height: 200px;
+}
+
+.tm-recipe-trigger .tm-recipe-attributes {
+    height: 30px;
+}
+
+.tm-recipe-trigger .tm-recipe-attributes li.cell {
+    font-size: 15px;
+}
+
+.tm-recipe-trigger .tm-recipe-attributes li.cell span {
+    font-size: 11px;
+}
+
+.tm-recipe-trigger .tm-recipe-attributes li.cell i {
+    font-size: 14px;
+    top: 5px;
+    left: 8px;
+}
+
+.tm-recipe-trigger .tm-recipe-trigger-image,
+.tm-recipe-trigger img {
+    width: 100%;
+    height: auto;
+}
+
+.tm-recipe-trigger .tm-title.ellipsis {
+    height: auto;
+}
+
+.tm-recipe-trigger .tm-title h3 {
+    font-size: 14px;
+    line-height: 15px;
+}
+.tm-recipe-trigger .tm-title.ellipsis > :first-child {
+    line-height: 15px;
+}
+
+.tm-wrapper.overview .tm-collection-trigger,
+.tm-wrapper.overview .tm-recipe-chip-trigger,
+.tm-wrapper.overview .tm-recipe-trigger {
+    margin: 10px 5px;
+}
+}
