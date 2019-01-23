@@ -17,12 +17,12 @@ body,
 }
 
 .grid-sidebar {
-    width: 18%;
+    width: 12%;
 }
 
 .grid-container {
     max-width: 100%;
-    width: 82%;
+    width: 86%;
     min-height: 101vh;
 }
 
