@@ -66,6 +66,7 @@ function PrepareAndSaveToPaprika() {
 				.replace(/(<div id="hints-and-tricks")([\w\W]+?)(<\/div>)/, function () {
 					return arguments[1] + ' itemprop="notes"'
 						+ arguments[2].replace(/<\/ul>\s*<ul>/g,'')
+							.replace(/<li>[^<]+on Cookidoo.<\/li>/,'')
 						+ arguments[3]
 
 				})
