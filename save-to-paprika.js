@@ -13,6 +13,7 @@ var paprikaOfficialBookmarkletURL = //'https://stage.sandbox.internal.rba.gov.au
 
 function cleanUp(str) {
 	return str.replace(/<!--[\w\W]+?-->/g,'')
+		.replace(/<(\w+)[^>]*?><\/\1>/g,'')
 		.replace(/\sclass="[^"]*"/g,'')
 		.replace(/<span>\s*([\w\W]+?)\s*<\/span>/g, '$1')
 		.replace(/\s+/g,' ')
@@ -24,7 +25,7 @@ function cleanUp(str) {
 
 function upHeadings(str) {
 	return str.replace(/(<(h\d)[^>]*>\s*)([^<]+?)(\s*<\/\2>)/g, function () {
-		return '<br/><br/>' + arguments[1] + arguments[3].toUpperCase() + arguments[4];
+		return /*'<br/><br/>' +*/ arguments[1] + arguments[3].toUpperCase() + arguments[4];
 	})
 }
 
@@ -38,244 +39,35 @@ function PrepareAndSaveToPaprika() {
 
 			var
 				HTML = document.documentElement.innerHTML,// d.body.innerHTML,
-				newHTML = '',
+				newHTML = HTML;
 
-				titleTmp = /<h1[^>]*>(?:\s*<span[^>]*>)?\s*([^<]+)\s*</i.exec(HTML),
-				recipeImageURL,
+			newHTML = newHTML
+				.replace(/<nobr>([^<]+)<\/nobr>/g, function () {
+					return '<nobr>' + arguments[1].replace(/./g, function () {
 
-				n = {
-					title: '',
-					image: '',
-					info: {},
-					nutrition: {},
-					ingredients: '',
-					instructions: '',
-					notes: ''
-				}
-			;
+						var code = arguments[0].charCodeAt(0);
 
-			if(titleTmp) {
-				n.title = titleTmp[1];
-			}
-
-			var imgTmp = /<section class="qv-image-section[^>]+?background-image:\s*url\(&quot;(https:[^>]+?)&quot;[\w\W]+?<\/section>/i.exec(HTML);
-				//var imgTmp2 = /<!-- Quickview Image section -->[\w\W]+?<img src="([^"]+)"[\w\W]+<!-- .\/ Quickview Image section -->/i.exec(HTML);
-
-			/*if(imgTmp2) {
-				recipeImageURL = imgTmp2[1];
-			}
-			else*/ if (imgTmp) {
-				n.image = imgTmp[1];
-			}
-
-			HTML = HTML
-				.replace(/<html[^>]+>/,'<html>')
-				.replace(/<script[\w\W]+?<\/script>/g, '')
-				.replace(/\s*(data-|ng-|ui-|cz-|autoscroll|style|id)[\w-]*="[^"]*"/gi, '')
-				.replace(/<body[^>]*>[\w\W]+?<!-- START: landscape slide 01 \(Quickview\) -->\s*([\w\W]+?)\s*<!-- END: landscape slide 01 \(Quickview\) -->[\w\W]+?<\/body>/i, '<body>$1</body>')
-//				.replace(/\s*<li class="qv-recipe other[\w\W]+?<!-- END: landscape slide 01 \(Quickview\) -->\s*<\/li>/i, '')
-				.replace(/<!-- Quickview Image section -->[\w\W]+?<img src="([^"]+)"[\w\W]+<!-- .\/ Quickview Image section -->/i, function () {
-					n.image = arguments[1];
-					return '';
-				})
-				.replace(/<\/body>/,'<img src="' + n.image+ '" style="max-width: 300px;"/></body>')
-				.replace(/<head[^>]*>[\w\W]+?<\/head>/, '')
-
-				.replace(/<div class="clearfix">[\w\W]+?<!-- .\/ Quickview action panel -->/,'')
-
-				.replace(/<h1 class="qv-recipe-head"><span>([^<]+)<\/span><\/h1>/, '')
-				.replace(/<div class="qv-info-[^"]+">\s*<i class="icon icon-(preparation-time|total-time|portion|difficulty)"><\/i>\s*<p>\s*([^<]+)\s*<\/p>/gi, function () {
-					var title, prop;
-					switch(arguments[1]) {
-						case 'preparation-time':
-							n.info.prepTime = {name: 'Preparation time', value: arguments[2]};
-							break;
-						case 'total-time':
-							n.info.totalTime = {name: 'Total time', value: arguments[2]};
-							break;
-						case 'portion':
-							n.info.recipeYeild = {name: 'portions', value: arguments[2]};
-							break;
-						case 'difficulty':
-							n.info.difficulty = {name: 'Difficulty', value: arguments[2]};
-							break;
-					}
-
-					return '';
-				})
-
-				.replace(/(<!-- Start Quickview ingredients -->[\w\W]+<!-- .\/ Quickview ingredients -->)/i, function () {
-					n.ingredients = cleanUp(upHeadings(arguments[1].replace(/<span class="ingredient-subline">\s*([\w\W]+?)\s*<\/span>/g, '; $1')))
-						.replace(/<li/g, '<li itemprop="recipeIngredient"')
-					;
-					return '';
-				})
-
-				.replace(/(<!-- ngRepeat: stepGroup in recipe.recipeStepGroups -->[\w\W]+<!-- end ngRepeat: stepGroup in recipe.recipeStepGroups -->)/i, function () {
-					n.instructions = cleanUp(upHeadings(arguments[1].replace(/<i class="icon icon-([^"]+)">[^<]*<\/i>/g, function () {
-						return arguments[1].toUpperCase().replace(/-/g,' ');
-					})));
-					return '';
-				})
-
-
-				.replace(/(<!-- ngRepeat: nutrition in recipe.nutritions[^>]* -->[\w\W]*<!-- end ngRepeat: nutrition in recipe.nutritions[^>]* -->)/i, function () {
-					n.nutrition = upHeadings(cleanUp(arguments[1].replace(/<p>([^<]+)<\/p>/,function () {
-						n.nutritionPortion = arguments[1];
-						return '';
-					})).replace(/<div[^>]*>\s*<h5[^>]*>\s*(.+?)\s*<\/h5>\s*(.+?)\s*<\/div>/g, function () {
-						return '<li>' +
-							'<span class="nutrition-label">' + arguments[1] + ':</span> ' +
-							'<span class="nutrition-value">' + arguments[2] + '</span>' +
-							'</li>'
-						;
-					}).replace(/<div>\s*(<li[\w\W]+?)\s*<\/div>/, function () {
-						var ret = '<ul itemprop="nutrition">';
-						if(n.nutritionPortion) ret += '<li><span class="nutrition-label">' + n.nutritionPortion + '</span></li>';
-						ret += arguments[1] + '</ul>';
-
-						return ret;
-					}));
-
-					return '';
-				})
-
-
-
-				.replace(/(<!-- Start Quickview variation -->[\w\W]+<!-- .\/ Quickview variation -->)/i, function () {
-					var counter = 0;
-					n.notes = cleanUp(upHeadings(arguments[1]))
-
-						.replace(/\s*<\/?(section|div)>/g,'')
-										/*;
-										console.log(n.notes);
-											n.notes = n.notes*/
-						.replace(/(<h3[^>]*>\s*(.+?)\s*<\/h3>)/g, function () {
-							if(counter++) {
-								return '<h4>' + arguments[2] + '</h4>';
-							}
-							else {
-								return arguments[1] + '<div>';
-							}
-						})
-						+ '</div>'
-					;
-					return '';
-				})
-
-
-//			; 	console.log(HTML); HTML = HTML
-;
-
-			// Cook time
-			if(n.info.prepTime) {
-				var re = /(?:(\d+)h)?\s*(\d+)m/,
-					prepTmp,
-					totalTmp,
-					prepTime = 0,
-					totalTime = 0,
-					cookTime,
-					cookTimeStr = ''
-				;
-
-				//console.log(prep);
-
-				function convertStrToMinutes(str) {
-					var re = /(?:(\d+)h)?(?:\s*(\d+)m)?/,
-						tmp,
-						ret = 0
-					;
-
-					if(tmp = re.exec(str)) {
-						if (tmp[1]) {
-							ret += 60 * Number(tmp[1]);
+						switch(code) {
+							case 57347:
+								return 'REVERSE';
+							case 57346:
+								return 'STIRRING';
+							default:
+								if(code > 10000) {
+									console.log(arguments[0] + ": " + code);
+									return '&#' + code + ';';
+								}
+								return arguments[0];
 						}
-						if (tmp[2]) {
-							ret += Number(tmp[2]);
-						}
-					}
-
-					return ret;
-				}
-
-				prepTime = convertStrToMinutes(n.info.prepTime.value);
-				totalTime = convertStrToMinutes(n.info.totalTime.value);
-
-				if(totalTime > prepTime) {
-					cookTime = totalTime - prepTime;
-				}
-				else {
-					cookTime = 0;
-				}
-
-				if(cookTime > 60) {
-					cookTimeStr = String(Math.floor(cookTime / 60)) + 'h ' + String(cookTime % 60) + 'm';
-				}
-				else {
-					cookTimeStr = cookTime + 'm';
-				}
-
-				n.info.cookTime = {name: 'Cook Time', value: cookTimeStr};
-			}
-
-
-			newHTML = '<head>' +
-				'<title>' + n.title + '</title>' +
-				'<meta property="og:image" content="' + n.image +'">' +
-				'<style>.block {float: left; margin: 0 3% 5% 0; max-width: 30%;}</style>' +
-				'</head>';
-
-			newHTML += '<body>' +
-				'<div itemscope itemtype="http://schema.org/Recipe">'
+					})
+					+ '</nobr>'	;
+				})
+				.replace(/(id="hints-and-tricks")/, '$1 itemprop="notes"')
+				.replace(/<h3 id="hints-and-tricks-title">[^<]+<\/h3>/,'<h3>Notes</h3>')
 			;
 
-			newHTML += '<section class="block">';
-
-			newHTML +=
-				'<h1 itemprop="name">' + n.title + '</h1>' +
-				'<img style="max-width: 300px; max-height: 300px;" itemprop="" src="' + n.image + '" alt=""/>'
-
-			;
-
-
-			newHTML += '<h3>INFORMATION</h3>'
-			;
-
-			for(var i in n.info) {
-				if(n.info.hasOwnProperty(i)) {
-					newHTML += '<div itemprop="' + i + '">' + (i !== 'recipeYeild' ? n.info[i].name + ': ' + n.info[i].value :  n.info[i].value + ' ' + n.info[i].name.toLowerCase()) + '</div>';
-				}
-			}
-
-			newHTML += '</section>';
-
-
-			newHTML += '<section class="block">'
-				+ n.ingredients
-
-			;
-
-
-			newHTML += n.nutrition
-				+ '</section>'
-			;
-
-			newHTML += '<section class="block">'
-				+ '<h3>INSTRUCTIONS</h3>'
-				+ '<div itemprop="recipeInstructions">'
-				+ n.instructions
-				+ '</div>'
-				+ '<div itemprop="notes"> '
-				+ n.notes
-
-				+ '</div></section>'
-			;
-
-			newHTML += '</div>';
-
-//console.log(HTML);
 			if(withConfirmation) {
-				newHTML += '<input style="    background: #006699;\n' +
+				newHTML = newHTML.replace(/<\/body>/, '<input style="    background: #006699;\n' +
 					'    color: #fff;\n' +
 					'    padding: 8px;\n' +
 					'    position: fixed;\n' +
@@ -283,10 +75,11 @@ function PrepareAndSaveToPaprika() {
 					'    top: 5px;\n' +
 					'    box-shadow: 3px 3px 3px rgba(0,0,0,.2);\n' +
 					'    border: none;\n' +
-					'    border-radius: 5px;" onclick="callPaprikaBookmarklet(true); removeTheButton(this); return false;" value="Run Paprika Bookmarklet?"/>';
-			}
+					'    z-index: 10000;\n' +
+					'    border-radius: 5px;" onclick="callPaprikaBookmarklet(true); removeTheButton(this); return false;" value="Run Paprika Bookmarklet?"/>');
 
-			newHTML += '</body>';
+				newHTML += '</body>';
+			}
 
 			d.documentElement.innerHTML = newHTML;
 
