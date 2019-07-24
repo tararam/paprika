@@ -42,8 +42,9 @@ function PrepareAndSaveToPaprika() {
 				newHTML = HTML;
 
 			newHTML = newHTML
-				.replace(/<nobr>([^<]+)<\/nobr>/g, function () {
-					return '<nobr>' + arguments[1].replace(/./g, function () {
+				.replace(/®/g, '')
+				.replace(/<(nobr|strong)>([^<]+)<\/\1>/g, function () {
+					return '<nobr>' + arguments[2].replace(/./g, function () {
 
 						var code = arguments[0].charCodeAt(0);
 
@@ -62,7 +63,12 @@ function PrepareAndSaveToPaprika() {
 					})
 					+ '</nobr>'	;
 				})
-				.replace(/(id="hints-and-tricks")/, '$1 itemprop="notes"')
+				.replace(/(<div id="hints-and-tricks")([\w\W]+?)(<\/div>)/, function () {
+					return arguments[1] + ' itemprop="notes"'
+						+ arguments[2].replace(/<\/ul>\s*<ul>/g,'')
+						+ arguments[3]
+
+				})
 				.replace(/<h3 id="hints-and-tricks-title">[^<]+<\/h3>/,'<h3>Notes</h3>')
 			;
 
