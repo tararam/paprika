@@ -1,5 +1,5 @@
 var d = document,
-	withConfirmation = true,
+	withConfirmation = false,
 	timeID = (new Date().getTime());
 
 //*
