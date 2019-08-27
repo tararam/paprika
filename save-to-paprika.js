@@ -5,9 +5,7 @@ var d = document,
 //*
 var paprikaOfficialBookmarkletURL = 'https://www.paprikaapp.com/bookmarklet/v1/?token=eb6ec5bd28776f47&timestamp=' + timeID;
 /*/
-var paprikaOfficialBookmarkletURL = //'https://stage.sandbox.internal.rba.gov.au' +
-	//'http://localhost' +
-	'http://marat.rba.gov.au' +
+var paprikaOfficialBookmarkletURL = 'http://localhost' +
 	'/bookmarklets/paprika/bookmarklet-save-to-paprika.js?timestamp=' + timeID;
 /**/
 
